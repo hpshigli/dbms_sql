@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Security Incidents - Attack Surface Intelligence</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 20px;
+        background: #f4f4f4;
+      }
+
+      /* Navigation */
+      .navbar {
+        background: #333;
+        padding: 15px 25px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+      }
+      .navbar a {
+        color: white;
+        text-decoration: none;
+        margin-right: 25px;
+        font-size: 16px;
+        transition: color 0.3s;
+      }
+      .navbar a:hover {
+        color: #4caf50;
+      }
+
+      /* Flash Messages */
+      .flash-messages {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 2000;
+        max-width: 400px;
+      }
+      .flash {
+        background: #4caf50;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      /* Header Section */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+      }
+
+      /* Actions */
+      .actions {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+      .search-box {
+        padding: 10px 15px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        width: 300px;
+      }
+      .search-box:focus {
+        outline: none;
+        border-color: #4caf50;
+      }
+
+      /* Buttons */
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+      }
+      .btn-primary {
+        background: #4caf50;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .btn-danger {
+        background: #f44336;
+        color: white;
+      }
+      .btn-danger:hover {
+        background: #da190b;
+        transform: translateY(-2px);
+      }
+      .btn-warning {
+        background: #ff9800;
+        color: white;
+      }
+      .btn-warning:hover {
+        background: #e68900;
+        transform: translateY(-2px);
+      }
+      .btn-small {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      /* Table */
+      .table-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background: #4caf50;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+      }
+      tr:hover {
+        background: #f5f5f5;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* Classification Badges */
+      .classification-badge {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 11px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+      .security-breach {
+        background: #f44336;
+        color: white;
+      }
+      .data-loss {
+        background: #9c27b0;
+        color: white;
+      }
+      .service-disruption {
+        background: #ff9800;
+        color: white;
+      }
+      .policy-violation {
+        background: #607d8b;
+        color: white;
+      }
+
+      /* Status Badges */
+      .status-badge {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 11px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+      .open {
+        background: #f44336;
+        color: white;
+      }
+      .in-progress {
+        background: #ff9800;
+        color: white;
+      }
+      .resolved {
+        background: #4caf50;
+        color: white;
+      }
+      .closed {
+        background: #9e9e9e;
+        color: white;
+      }
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.6);
+        animation: fadeIn 0.3s;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .modal-content {
+        background-color: white;
+        margin: 3% auto;
+        padding: 0;
+        border-radius: 12px;
+        width: 600px;
+        max-width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        animation: slideDown 0.3s;
+      }
+
+      @keyframes slideDown {
+        from {
+          transform: translateY(-50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .modal-header {
+        padding: 25px;
+        background: #4caf50;
+        color: white;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-header h2 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .close {
+        color: white;
+        font-size: 32px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+        transition: transform 0.2s;
+      }
+      .close:hover {
+        transform: rotate(90deg);
+      }
+      .modal-body {
+        padding: 30px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555;
+        font-size: 14px;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #4caf50;
+      }
+      .modal-footer {
+        padding: 20px 30px;
+        text-align: right;
+        background: #f9f9f9;
+        border-radius: 0 0 12px 12px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
+      }
+      .empty-state h3 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <div class="navbar">
+      <a href="/">Dashboard</a>
+      <a href="/accounts">Accounts</a>
+      <a href="/assets">Assets</a>
+      <a href="/exposures">Exposures</a>
+      <a href="/vulnerabilities">Vulnerabilities</a>
+      <a href="/patches">Patches</a>
+      <a href="/deployments">Deployments</a>
+      <a href="/alerts">Alerts</a>
+      <a href="/incidents">Incidents</a>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+      <div class="flash">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
+
+    <!-- Header -->
+    <div class="header">
+      <h1>Security Incidents</h1>
+      <div class="actions">
+        <input
+          type="text"
+          id="searchInput"
+          class="search-box"
+          placeholder="Search incidents (asset, classification, status)..."
+          onkeyup="searchTable()"
+        />
+        <button class="btn btn-primary" id="addBtn">Add Incident</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      {% if incidents %}
+      <table>
+        <thead>
+          <tr>
+            <th>Incident ID</th>
+            <th>Asset Name</th>
+            <th>Classification</th>
+            <th>Status</th>
+            <th>Opened At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for incident in incidents %}
+          <tr>
+            <td><strong>#{{ incident[0] }}</strong></td>
+            <td>{{ incident[1] }}</td>
+            <td>
+              <span
+                class="classification-badge {{ incident[2].lower().replace(' ', '-') }}"
+              >
+                {{ incident[2] }}
+              </span>
+            </td>
+            <td>
+              <span
+                class="status-badge {{ incident[3].lower().replace(' ', '-') }}"
+              >
+                {{ incident[3] }}
+              </span>
+            </td>
+            <td>{{ incident[4] }}</td>
+            <td>
+              <button
+                class="btn btn-warning btn-small edit-btn"
+                data-id="{{ incident[0] }}"
+                data-alert="{{ incident[5] }}"
+                data-class="{{ incident[2] }}"
+                data-status="{{ incident[3] }}"
+              >
+                Edit
+              </button>
+              <a
+                href="/incidents/delete/{{ incident[0] }}"
+                class="btn btn-danger btn-small delete-link"
+                data-info="{{ incident[1] }}"
+              >
+                Delete
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <h3>No Security Incidents Found</h3>
+        <p>Click "Add Incident" to create your first security incident.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Add Incident Modal -->
+    <div id="addModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add New Security Incident</h2>
+          <span class="close" id="closeBtn">&times;</span>
+        </div>
+        <form method="POST" action="/incidents/add">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="alert_id">Alert *</label>
+              <select name="alert_id" id="alert_id" required>
+                <option value="">Select Alert</option>
+                {% for alert in alerts_list %}
+                <option value="{{ alert[0] }}">{{ alert[1][:60] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="classification">Classification *</label>
+              <select name="classification" id="classification" required>
+                <option value="">Select Classification</option>
+                <option value="Security Breach">Security Breach</option>
+                <option value="Data Loss">Data Loss</option>
+                <option value="Service Disruption">Service Disruption</option>
+                <option value="Policy Violation">Policy Violation</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="status">Status *</label>
+              <select name="status" id="status" required>
+                <option value="">Select Status</option>
+                <option value="Open">Open</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" id="cancelBtn">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Add Incident</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Incident Modal -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Edit Security Incident</h2>
+          <span class="close" id="closeEditBtn">&times;</span>
+        </div>
+        <form method="POST" id="editForm">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="edit_alert_id">Alert *</label>
+              <select name="alert_id" id="edit_alert_id" required>
+                {% for alert in alerts_list %}
+                <option value="{{ alert[0] }}">{{ alert[1][:60] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit_classification">Classification *</label>
+              <select name="classification" id="edit_classification" required>
+                <option value="Security Breach">Security Breach</option>
+                <option value="Data Loss">Data Loss</option>
+                <option value="Service Disruption">Service Disruption</option>
+                <option value="Policy Violation">Policy Violation</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit_status">Status *</label>
+              <select name="status" id="edit_status" required>
+                <option value="Open">Open</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" id="cancelEditBtn">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Update Incident
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Get modal elements
+      var modal = document.getElementById("addModal");
+      var addBtn = document.getElementById("addBtn");
+      var closeBtn = document.getElementById("closeBtn");
+      var cancelBtn = document.getElementById("cancelBtn");
+
+      var editModal = document.getElementById("editModal");
+      var closeEditBtn = document.getElementById("closeEditBtn");
+      var cancelEditBtn = document.getElementById("cancelEditBtn");
+
+      // Open add modal
+      addBtn.addEventListener("click", function () {
+        modal.style.display = "block";
+      });
+
+      // Close add modal
+      closeBtn.addEventListener("click", function () {
+        modal.style.display = "none";
+      });
+
+      cancelBtn.addEventListener("click", function () {
+        modal.style.display = "none";
+      });
+
+      // Close edit modal
+      closeEditBtn.addEventListener("click", function () {
+        editModal.style.display = "none";
+      });
+
+      cancelEditBtn.addEventListener("click", function () {
+        editModal.style.display = "none";
+      });
+
+      // Close modal when clicking outside
+      window.addEventListener("click", function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+        if (event.target == editModal) {
+          editModal.style.display = "none";
+        }
+      });
+
+      // Edit button functionality
+      var editButtons = document.querySelectorAll(".edit-btn");
+      editButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          var id = this.getAttribute("data-id");
+          var alertId = this.getAttribute("data-alert");
+          var classification = this.getAttribute("data-class");
+          var status = this.getAttribute("data-status");
+
+          document.getElementById("edit_alert_id").value = alertId;
+          document.getElementById("edit_classification").value = classification;
+          document.getElementById("edit_status").value = status;
+          document.getElementById("editForm").action =
+            "/incidents/update/" + id;
+          editModal.style.display = "block";
+        });
+      });
+
+      // Delete confirmation
+      var deleteLinks = document.querySelectorAll(".delete-link");
+      deleteLinks.forEach(function (link) {
+        link.addEventListener("click", function (e) {
+          var info = this.getAttribute("data-info");
+          var confirmed = confirm(
+            "Are you sure you want to delete incident for " +
+              info +
+              "?\n\nThis action cannot be undone."
+          );
+          if (!confirmed) {
+            e.preventDefault();
+          }
+        });
+      });
+
+      // Real-time search function
+      function searchTable() {
+        var input = document.getElementById("searchInput");
+        var filter = input.value.toLowerCase();
+        var table = document.querySelector("table");
+
+        if (!table) return;
+
+        var tbody = table.querySelector("tbody");
+        var rows = tbody.querySelectorAll("tr:not(#noResultsMsg)");
+        var visibleCount = 0;
+
+        rows.forEach(function (row) {
+          var cells = row.querySelectorAll("td");
+          var found = false;
+
+          cells.forEach(function (cell) {
+            var text = cell.textContent || cell.innerText;
+            if (text.toLowerCase().indexOf(filter) > -1) {
+              found = true;
+            }
+          });
+
+          if (found) {
+            row.style.display = "";
+            visibleCount++;
+          } else {
+            row.style.display = "none";
+          }
+        });
+
+        var existingMsg = document.getElementById("noResultsMsg");
+        if (existingMsg) {
+          existingMsg.remove();
+        }
+
+        if (visibleCount === 0 && filter !== "") {
+          var noResults = document.createElement("tr");
+          noResults.id = "noResultsMsg";
+          noResults.innerHTML =
+            '<td colspan="6" style="text-align: center; padding: 40px; color: #999; font-size: 16px;"><h3 style="margin-bottom: 10px;">No incidents found matching "' +
+            filter +
+            '"</h3><p>Try a different search term</p></td>';
+          tbody.appendChild(noResults);
+        }
+      }
+
+      window.searchTable = searchTable;
+
+      setTimeout(function () {
+        var flashMessages = document.querySelectorAll(".flash");
+        flashMessages.forEach(function (msg) {
+          msg.style.opacity = "0";
+          msg.style.transition = "opacity 0.5s";
+          setTimeout(function () {
+            msg.style.display = "none";
+          }, 500);
+        });
+      }, 5000);
+    </script>
+  </body>
+</html>

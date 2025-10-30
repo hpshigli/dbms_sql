@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Assets - Attack Surface Intelligence</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 20px;
+        background: #f4f4f4;
+      }
+
+      /* Navigation */
+      .navbar {
+        background: #333;
+        padding: 15px 25px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+      }
+      .navbar a {
+        color: white;
+        text-decoration: none;
+        margin-right: 25px;
+        font-size: 16px;
+        transition: color 0.3s;
+      }
+      .navbar a:hover {
+        color: #4caf50;
+      }
+
+      /* Flash Messages */
+      .flash-messages {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 2000;
+        max-width: 400px;
+      }
+      .flash {
+        background: #4caf50;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      /* Header Section */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+      }
+
+      /* Actions */
+      .actions {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+      .search-box {
+        padding: 10px 15px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        width: 300px;
+      }
+      .search-box:focus {
+        outline: none;
+        border-color: #4caf50;
+      }
+
+      /* Buttons */
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+      }
+      .btn-primary {
+        background: #4caf50;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .btn-danger {
+        background: #f44336;
+        color: white;
+      }
+      .btn-danger:hover {
+        background: #da190b;
+        transform: translateY(-2px);
+      }
+      .btn-warning {
+        background: #ff9800;
+        color: white;
+      }
+      .btn-warning:hover {
+        background: #e68900;
+        transform: translateY(-2px);
+      }
+      .btn-small {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      /* Table */
+      .table-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background: #4caf50;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+      }
+      tr:hover {
+        background: #f5f5f5;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* Provider Badges */
+      .provider-badge {
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 11px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+      .aws {
+        background: #ff9900;
+        color: white;
+      }
+      .azure {
+        background: #0089d6;
+        color: white;
+      }
+      .google-cloud {
+        background: #4285f4;
+        color: white;
+      }
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.6);
+        animation: fadeIn 0.3s;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .modal-content {
+        background-color: white;
+        margin: 3% auto;
+        padding: 0;
+        border-radius: 12px;
+        width: 600px;
+        max-width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        animation: slideDown 0.3s;
+      }
+
+      @keyframes slideDown {
+        from {
+          transform: translateY(-50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .modal-header {
+        padding: 25px;
+        background: #4caf50;
+        color: white;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-header h2 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .close {
+        color: white;
+        font-size: 32px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+        transition: transform 0.2s;
+      }
+      .close:hover {
+        transform: rotate(90deg);
+      }
+      .modal-body {
+        padding: 30px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555;
+        font-size: 14px;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #4caf50;
+      }
+      .modal-footer {
+        padding: 20px 30px;
+        text-align: right;
+        background: #f9f9f9;
+        border-radius: 0 0 12px 12px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
+      }
+      .empty-state h3 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <div class="navbar">
+      <a href="/">Dashboard</a>
+      <a href="/accounts">Accounts</a>
+      <a href="/assets">Assets</a>
+      <a href="/exposures">Exposures</a>
+      <a href="/vulnerabilities">Vulnerabilities</a>
+      <a href="/patches">Patches</a>
+      <a href="/deployments">Deployments</a>
+      <a href="/alerts">Alerts</a>
+      <a href="/incidents">Incidents</a>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+      <div class="flash">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
+
+    <!-- Header -->
+    <!-- Header -->
+    <div class="header">
+      <h1>Assets Management</h1>
+      <div class="actions">
+        <input
+          type="text"
+          id="searchInput"
+          class="search-box"
+          placeholder="Search assets (name, type, IP, provider, account)..."
+          onkeyup="searchTable()"
+        />
+        <button class="btn btn-primary" id="addBtn">Add Asset</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      {% if assets %}
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>IP Address</th>
+            <th>Provider</th>
+            <th>Account</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for asset in assets %}
+          <tr>
+            <td><strong>#{{ asset[0] }}</strong></td>
+            <td>{{ asset[1] }}</td>
+            <td>{{ asset[2] }}</td>
+            <td><code>{{ asset[3] }}</code></td>
+            <td>
+              <span
+                class="provider-badge {{ asset[4].lower().replace(' ', '-') }}"
+              >
+                {{ asset[4] }}
+              </span>
+            </td>
+            <td>{{ asset[5] }}</td>
+            <td>
+              <button
+                class="btn btn-warning btn-small edit-btn"
+                data-id="{{ asset[0] }}"
+                data-name="{{ asset[1] }}"
+                data-type="{{ asset[2] }}"
+                data-ip="{{ asset[3] }}"
+              >
+                Edit
+              </button>
+              <a
+                href="/assets/delete/{{ asset[0] }}"
+                class="btn btn-danger btn-small delete-link"
+                data-name="{{ asset[1] }}"
+              >
+                Delete
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <h3>No Assets Found</h3>
+        <p>Click "Add Asset" to create your first asset record.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Add Asset Modal -->
+    <div id="addModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add New Asset</h2>
+          <span class="close" id="closeBtn">&times;</span>
+        </div>
+        <form method="POST" action="/assets/add">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="name">Asset Name *</label>
+              <input
+                type="text"
+                name="name"
+                id="name"
+                required
+                placeholder="e.g., web-server-01"
+              />
+            </div>
+            <div class="form-group">
+              <label for="type">Asset Type *</label>
+              <input
+                type="text"
+                name="type"
+                id="type"
+                required
+                placeholder="e.g., EC2 Instance"
+              />
+            </div>
+            <div class="form-group">
+              <label for="ip">IP Address *</label>
+              <input
+                type="text"
+                name="ip"
+                id="ip"
+                required
+                placeholder="e.g., 10.0.1.15"
+                pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+                title="Valid IP format: xxx.xxx.xxx.xxx"
+              />
+            </div>
+            <div class="form-group">
+              <label for="account_id">Cloud Account *</label>
+              <select name="account_id" id="account_id" required>
+                <option value="">Select Account</option>
+                {% for account in accounts %}
+                <option value="{{ account[0] }}">
+                  {{ account[2] }} - {{ account[1] }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" id="cancelBtn">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Add Asset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Asset Modal -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Edit Asset</h2>
+          <span class="close" id="closeEditBtn">&times;</span>
+        </div>
+        <form method="POST" id="editForm">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="edit_name">Asset Name *</label>
+              <input type="text" name="name" id="edit_name" required />
+            </div>
+            <div class="form-group">
+              <label for="edit_type">Asset Type *</label>
+              <input type="text" name="type" id="edit_type" required />
+            </div>
+            <div class="form-group">
+              <label for="edit_ip">IP Address *</label>
+              <input
+                type="text"
+                name="ip"
+                id="edit_ip"
+                required
+                pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+              />
+            </div>
+            <div class="form-group">
+              <label for="edit_account">Cloud Account *</label>
+              <select name="account_id" id="edit_account" required>
+                {% for account in accounts %}
+                <option value="{{ account[0] }}">
+                  {{ account[2] }} - {{ account[1] }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" id="cancelEditBtn">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Update Asset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Get modal elements
+      var modal = document.getElementById("addModal");
+      var addBtn = document.getElementById("addBtn");
+      var closeBtn = document.getElementById("closeBtn");
+      var cancelBtn = document.getElementById("cancelBtn");
+
+      var editModal = document.getElementById("editModal");
+      var closeEditBtn = document.getElementById("closeEditBtn");
+      var cancelEditBtn = document.getElementById("cancelEditBtn");
+
+      // Open add modal
+      addBtn.addEventListener("click", function () {
+        modal.style.display = "block";
+      });
+
+      // Close add modal
+      closeBtn.addEventListener("click", function () {
+        modal.style.display = "none";
+      });
+
+      cancelBtn.addEventListener("click", function () {
+        modal.style.display = "none";
+      });
+
+      // Close edit modal
+      closeEditBtn.addEventListener("click", function () {
+        editModal.style.display = "none";
+      });
+
+      cancelEditBtn.addEventListener("click", function () {
+        editModal.style.display = "none";
+      });
+
+      // Close modal when clicking outside
+      window.addEventListener("click", function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+        if (event.target == editModal) {
+          editModal.style.display = "none";
+        }
+      });
+
+      // Edit button functionality
+      var editButtons = document.querySelectorAll(".edit-btn");
+      editButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          var id = this.getAttribute("data-id");
+          var name = this.getAttribute("data-name");
+          var type = this.getAttribute("data-type");
+          var ip = this.getAttribute("data-ip");
+
+          document.getElementById("edit_name").value = name;
+          document.getElementById("edit_type").value = type;
+          document.getElementById("edit_ip").value = ip;
+          document.getElementById("editForm").action = "/assets/update/" + id;
+          editModal.style.display = "block";
+        });
+      });
+
+      // Delete confirmation
+      var deleteLinks = document.querySelectorAll(".delete-link");
+      deleteLinks.forEach(function (link) {
+        link.addEventListener("click", function (e) {
+          var name = this.getAttribute("data-name");
+          var confirmed = confirm(
+            'Are you sure you want to delete asset "' +
+              name +
+              '"?\n\nThis action cannot be undone.'
+          );
+          if (!confirmed) {
+            e.preventDefault();
+          }
+        });
+      });
+
+      // Real-time search function
+      function searchTable() {
+        var input = document.getElementById("searchInput");
+        var filter = input.value.toLowerCase();
+        var table = document.querySelector("table");
+
+        // Check if table exists
+        if (!table) return;
+
+        var tbody = table.querySelector("tbody");
+        var rows = tbody.querySelectorAll("tr:not(#noResultsMsg)");
+        var visibleCount = 0;
+
+        rows.forEach(function (row) {
+          var cells = row.querySelectorAll("td");
+          var found = false;
+
+          // Search through all cells in the row
+          cells.forEach(function (cell) {
+            var text = cell.textContent || cell.innerText;
+            if (text.toLowerCase().indexOf(filter) > -1) {
+              found = true;
+            }
+          });
+
+          // Show or hide the row
+          if (found) {
+            row.style.display = "";
+            visibleCount++;
+          } else {
+            row.style.display = "none";
+          }
+        });
+
+        // Show "no results" message if nothing found
+        var existingMsg = document.getElementById("noResultsMsg");
+        if (existingMsg) {
+          existingMsg.remove();
+        }
+
+        if (visibleCount === 0 && filter !== "") {
+          var noResults = document.createElement("tr");
+          noResults.id = "noResultsMsg";
+          noResults.innerHTML =
+            '<td colspan="7" style="text-align: center; padding: 40px; color: #999; font-size: 16px;"><h3 style="margin-bottom: 10px;">No assets found matching "' +
+            filter +
+            '"</h3><p>Try a different search term</p></td>';
+          tbody.appendChild(noResults);
+        }
+      }
+
+      // Make searchTable globally accessible
+      window.searchTable = searchTable;
+
+      // Auto-hide flash messages after 5 seconds
+      setTimeout(function () {
+        var flashMessages = document.querySelectorAll(".flash");
+        flashMessages.forEach(function (msg) {
+          msg.style.opacity = "0";
+          msg.style.transition = "opacity 0.5s";
+          setTimeout(function () {
+            msg.style.display = "none";
+          }, 500);
+        });
+      }, 5000);
+    </script>
+  </body>
+</html>

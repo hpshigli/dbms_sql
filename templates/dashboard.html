@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Attack Surface Intelligence Dashboard</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+      .navbar {
+        background: rgba(0, 0, 0, 0.9);
+        padding: 15px 25px;
+        margin-bottom: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+      .navbar a {
+        color: white;
+        text-decoration: none;
+        margin-right: 25px;
+        font-size: 16px;
+        transition: all 0.3s;
+        padding: 8px 12px;
+        border-radius: 5px;
+      }
+      .navbar a:hover {
+        background: #4caf50;
+        transform: translateY(-2px);
+      }
+      h1 {
+        color: white;
+        margin-bottom: 30px;
+        text-align: center;
+        font-size: 36px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+      .stat-card {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s, box-shadow 0.3s;
+        position: relative;
+        overflow: hidden;
+      }
+      .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      }
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, #4caf50, #45a049);
+      }
+      .stat-card.critical::before {
+        background: linear-gradient(90deg, #f44336, #da190b);
+      }
+      .stat-card h2 {
+        margin: 0;
+        color: #555;
+        font-size: 16px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .stat-card .number {
+        font-size: 56px;
+        color: #4caf50;
+        margin: 15px 0;
+        font-weight: bold;
+      }
+      .stat-card .number.critical {
+        color: #f44336;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+      .refresh-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+        margin-left: 10px;
+      }
+      .flash-messages {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+      }
+      .flash {
+        background: #4caf50;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.3s ease-out;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar">
+      <a href="/">Dashboard</a>
+      <a href="/accounts">Accounts</a>
+      <a href="/assets">Assets</a>
+      <a href="/exposures">Exposures</a>
+      <a href="/vulnerabilities">Vulnerabilities</a>
+      <a href="/patches">Patches</a>
+      <a href="/deployments">Deployments</a>
+      <a href="/alerts">Alerts</a>
+      <a href="/incidents">Incidents</a>
+      <span class="refresh-badge" id="last-update">Updated now</span>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+      <div class="flash">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
+
+    <h1>Attack Surface Intelligence Dashboard</h1>
+
+    <div class="stats-container">
+      <div class="stat-card">
+        <h2>Total Assets</h2>
+        <div class="number" id="total-assets">{{ total_assets }}</div>
+        <p style="color: #888">Monitored Systems</p>
+      </div>
+      <div class="stat-card critical">
+        <h2>Critical Vulnerabilities</h2>
+        <div class="number critical" id="critical-vulns">
+          {{ critical_vulns }}
+        </div>
+        <p style="color: #888">Immediate Action Required</p>
+      </div>
+      <div class="stat-card critical">
+        <h2>Critical Alerts</h2>
+        <div class="number critical" id="critical-alerts">
+          {{ critical_alerts }}
+        </div>
+        <p style="color: #888">Security Events</p>
+      </div>
+      <div class="stat-card">
+        <h2>Total Exposures</h2>
+        <div class="number" id="total-exposures">{{ total_exposures }}</div>
+        <p style="color: #888">Network Exposures</p>
+      </div>
+      <div class="stat-card">
+        <h2>Pending Patches</h2>
+        <div class="number" style="color: #ff9800" id="pending-patches">
+          {{ pending_patches }}
+        </div>
+        <p style="color: #888">Awaiting Deployment</p>
+      </div>
+      <div class="stat-card">
+        <h2>Active Incidents</h2>
+        <div class="number" style="color: #2196f3" id="active-incidents">
+          {{ active_incidents }}
+        </div>
+        <p style="color: #888">Open & In Progress</p>
+      </div>
+    </div>
+
+    <script>
+      // Auto-refresh stats every 30 seconds
+      function updateStats() {
+        fetch("/api/stats")
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("total-assets").textContent =
+              data.total_assets;
+            document.getElementById("critical-vulns").textContent =
+              data.critical_vulns;
+            document.getElementById("critical-alerts").textContent =
+              data.critical_alerts;
+
+            // Update timestamp
+            const now = new Date();
+            document.getElementById(
+              "last-update"
+            ).textContent = `Updated ${now.toLocaleTimeString()}`;
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      // Update every 30 seconds
+      setInterval(updateStats, 30000);
+
+      // Auto-hide flash messages after 5 seconds
+      setTimeout(() => {
+        const flashMessages = document.querySelectorAll(".flash");
+        flashMessages.forEach((msg) => {
+          msg.style.animation = "slideOut 0.3s ease-out forwards";
+        });
+      }, 5000);
+    </script>
+  </body>
+</html>
